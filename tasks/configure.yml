@@ -6,7 +6,45 @@
     owner: root
     group: root
     mode: 0644
-  notify: restart node_exporter
+  notify:
+    - restart node_exporter
+    - systemd_reload
+  when: ansible_service_mgr == "systemd"
+
+- block:
+  - name: Copy the node_exporter init script
+    template:
+      src: node_exporter_sysv.j2
+      dest: /etc/init.d/node_exporter
+      owner: root
+      group: root
+      mode: 0755
+
+  - name: Copy the node_exporter sysconfig
+    template:
+      src: node_exporter_sysconfig.j2
+      dest: /etc/sysconfig/node_exporter
+      owner: root
+      group: root
+      mode: 0640
+
+  - name: Copy the node_exporter logrotate
+    template:
+      src: node_exporter_logrotate.j2
+      dest: /etc/logrotate.d/node_exporter
+      owner: root
+      group: root
+      mode: 0644
+
+  - name: Allow traffic in iptables
+    lineinfile:
+      path: /etc/sysconfig/iptables
+      regexp: '^-A INPUT.*--dport {{ node_exporter_port }}'
+      insertbefore: '^-A INPUT -j REJECT'
+      line: '-A INPUT -m state --state NEW -m tcp -p tcp --dport {{ node_exporter_port }} -j ACCEPT'
+    notify: reload iptables
+
+  when: ansible_service_mgr != "systemd"
 
 - block:
     - name: Create node_exporter config directory

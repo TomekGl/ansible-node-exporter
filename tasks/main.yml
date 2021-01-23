@@ -27,12 +27,13 @@
 
 - name: Ensure Node Exporter is enabled on boot
   become: true
-  systemd:
-    daemon_reload: true
+  service:
+    #daemon_reload: true
     name: node_exporter
     enabled: true
     state: started
   when:
     - not ansible_check_mode
+
   tags:
     - node_exporter_run

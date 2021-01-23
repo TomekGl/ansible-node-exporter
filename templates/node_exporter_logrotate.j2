@@ -1,0 +1,7 @@
+{{ node_exporter_log_file }}
+{
+    sharedscripts
+    postrotate
+        /etc/init.d/node_exporter restart 2> /dev/null || true
+    endscript
+}
