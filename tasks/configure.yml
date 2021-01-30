@@ -43,6 +43,7 @@
       insertbefore: '^-A INPUT -j REJECT'
       line: '-A INPUT -m state --state NEW -m tcp -p tcp --dport {{ node_exporter_port }} -j ACCEPT'
     notify: reload iptables
+    when: node_exporter_iptables
 
   when: ansible_service_mgr != "systemd"
 
